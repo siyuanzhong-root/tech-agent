@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教务智能助手 - DeepSeek AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .panel h2 .icon {
+            font-size: 1.2em;
+        }
+        
+        .user-info {
+            margin-bottom: 20px;
+        }
+        
+        .user-info h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .info-value {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .preferences-list {
+            margin-top: 15px;
+        }
+        
+        .preference-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin: 5px 5px 5px 0;
+            font-size: 0.85em;
+        }
+        
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+        
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .bot-message {
+            margin-right: auto;
+        }
+        
+        .message-content {
+            display: inline-block;
+            padding: 12px 18px;
+            border-radius: 18px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            text-align: left;
+            line-height: 1.6;
+        }
+        
+        .user-message .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .bot-message .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .message-time {
+            font-size: 0.75em;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-container input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .input-container input:focus {
+            border-color: #667eea;
+        }
+        
+        .input-container button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .input-container button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .input-container button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .data-display {
+            margin-top: 20px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .data-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .quick-action-btn {
+            padding: 12px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .quick-action-btn:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border-radius: 18px;
+            margin-bottom: 15px;
+        }
+        
+        .typing-indicator.active {
+            display: inline-block;
+        }
+        
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 教务智能助手 - DeepSeek AI</h1>
+        
+        <div class="main-grid">
+            <!-- 左侧：用户信息和快捷操作 -->
+            <div class="left-panel">
+                <div class="panel user-info">
+                    <h2><span class="icon">👤</span> 用户信息</h2>
+                    <div class="info-item">
+                        <span class="info-label">用户ID</span>
+                        <span class="info-value" id="userId">user123</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">最后操作</span>
+                        <span class="info-value" id="lastAction">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">偏好功能</span>
+                        <span class="info-value" id="preferredFeature">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">偏好科目</span>
+                        <span class="info-value" id="preferredSubject">-</span>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h2><span class="icon">⚡</span> 快捷操作</h2>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="sendQuickMessage('添加学生1001的数学成绩95分')">➕ 添加成绩</button>
+                        <button class="quick-action-btn" onclick="sendQuickMessage('查询数学成绩排序')">📊 成绩排序</button>
+                        <button class="quick-action-btn" onclick="sendQuickMessage('分析2024年上学期成绩')">📈 成绩分析</button>
+                        <button class="quick-action-btn" onclick="sendQuickMessage('查询学生1001的所有成绩')">🔍 查询学生</button>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h2><span class="icon">📊</span> 数据统计</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalStudents">0</div>
+                            <div class="stat-label">学生总数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalGrades">0</div>
+                            <div class="stat-label">成绩记录</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧：聊天窗口 -->
+            <div class="panel chat-container">
+                <h2><span class="icon">💬</span> 智能对话</h2>
+                <div class="chat-history" id="chatHistory">
+                    <div class="message bot-message">
+                        <div class="message-content">
+👋 您好！我是基于DeepSeek AI的教务智能助手。
+
+我可以帮您：
+• 📊 添加学生成绩
+• 🔍 查询和排序成绩
+• 📈 成绩统计和分析
+• 💡 智能问答和建议
+
+请直接输入您的问题或需求，我会尽力帮助您！
+                        </div>
+                        <div class="message-time" id="welcomeTime"></div>
+                    </div>
+                    <div class="typing-indicator" id="typingIndicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="input-container">
+                    <input type="text" id="userInput" placeholder="请输入您的问题或指令..." onkeypress="handleKeyPress(event)">
+                    <button id="sendButton" onclick="sendMessage()">发送</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 数据展示区域 -->
+        <div class="panel data-display">
+            <h2><span class="icon">📋</span> 数据展示</h2>
+            <table class="data-table" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>学生姓名</th>
+                        <th>学号</th>
+                        <th>科目</th>
+                        <th>分数</th>
+                        <th>学期</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTableBody">
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #999;">暂无数据，请添加成绩或查询数据</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        const userId = "user123";
+        let isProcessing = false;
+        
+        // 设置欢迎时间
+        document.getElementById('welcomeTime').textContent = new Date().toLocaleString();
+        
+        // 加载用户偏好
+        function loadUserPreferences() {
+            fetch(`/api/edu-agent/user-profile/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const preferences = data.preferences || {};
+                    document.getElementById('lastAction').textContent = preferences.last_action || '-';
+                    document.getElementById('preferredFeature').textContent = preferences.preferred_feature || '-';
+                    document.getElementById('preferredSubject').textContent = preferences.preferred_subject || '-';
+                })
+                .catch(error => {
+                    console.error("Error loading user preferences:", error);
+                });
+        }
+        
+        // 发送快捷消息
+        function sendQuickMessage(message) {
+            document.getElementById('userInput').value = message;
+            sendMessage();
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            if (isProcessing) return;
+            
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            isProcessing = true;
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = true;
+            sendButton.textContent = '处理中...';
+            
+            // 添加用户消息
+            addMessageToHistory('user', message);
+            input.value = '';
+            
+            // 显示输入指示器
+            showTypingIndicator();
+            
+            // 发送请求
+            fetch("/api/edu-agent/process", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `userId=${userId}&request=${encodeURIComponent(message)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideTypingIndicator();
+                const response = data.response;
+                addMessageToHistory('bot', response);
+                
+                // 更新用户偏好
+                loadUserPreferences();
+                
+                // 更新数据展示
+                updateDataDisplay(response);
+                
+                // 更新统计
+                updateStats();
+            })
+            .catch(error => {
+                hideTypingIndicator();
+                console.error("Error:", error);
+                addMessageToHistory('bot', '❌ 抱歉，处理请求时出现错误，请重试。');
+            })
+            .finally(() => {
+                isProcessing = false;
+                sendButton.disabled = false;
+                sendButton.textContent = '发送';
+            });
+        }
+        
+        // 添加消息到历史
+        function addMessageToHistory(sender, message) {
+            const chatHistory = document.getElementById('chatHistory');
+            const typingIndicator = document.getElementById('typingIndicator');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = message;
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            timeDiv.textContent = new Date().toLocaleString();
+            
+            messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(timeDiv);
+            
+            chatHistory.insertBefore(messageDiv, typingIndicator);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        
+        // 显示输入指示器
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').classList.add('active');
+        }
+        
+        // 隐藏输入指示器
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').classList.remove('active');
+        }
+        
+        // 更新数据展示
+        function updateDataDisplay(response) {
+            // 解析响应中的成绩数据
+            const lines = response.split('\n');
+            const gradeData = [];
+            
+            for (const line of lines) {
+                // 匹配格式：学生名 - 科目: 分数（学期）
+                const match = line.match(/[•\d]+\.?\s*(.+?)\s*-\s*(.+?):\s*(\d+\.?\d*)分[（\(](.+?)[）\)]/);
+                if (match) {
+                    gradeData.push({
+                        studentName: match[1].trim(),
+                        subject: match[2].trim(),
+                        score: match[3].trim(),
+                        semester: match[4].trim()
+                    });
+                }
+            }
+            
+            // 更新表格
+            const tbody = document.getElementById('dataTableBody');
+            if (gradeData.length > 0) {
+                tbody.innerHTML = '';
+                gradeData.forEach(grade => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${grade.studentName}</td>
+                        <td>-</td>
+                        <td>${grade.subject}</td>
+                        <td><strong>${grade.score}</strong></td>
+                        <td>${grade.semester}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+        
+        // 更新统计
+        function updateStats() {
+            // 这里可以调用API获取实际统计数据
+            // 暂时使用模拟数据
+            const rows = document.getElementById('dataTableBody').getElementsByTagName('tr');
+            if (rows.length > 0 && !rows[0].innerHTML.includes('暂无数据')) {
+                document.getElementById('totalGrades').textContent = rows.length;
+            }
+        }
+        
+        // 处理键盘事件
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        // 初始化
+        loadUserPreferences();
+    </script>
+</body>
+</html>
